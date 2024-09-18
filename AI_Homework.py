@@ -1,28 +1,23 @@
 import heapq
+import time
 
 
-class VacuumCleanerWorld:
+class VacuumCleanerEnvironment:
     def WorldCreation(
         self, gridSize=(4, 5), DirtLocations=None, InitialLocation=(1, 1)
     ):
-
         # initialize the environment with the grid, vacuum position, and dirt locations.
-
         self.gridSize = gridSize
         self.DirtLocations = DirtLocations or []
         self.InitialLocation = InitialLocation
 
     def GoalState(self, state):
-
         # Check if the goal state of no dirty rooms has been reached
-
         return len(state["dirt"]) == 0
 
     def potentialSuccessors(self, state):
-
         # Create all possible successor states given the current state
         # possible moves are up, left, right, down, or suck
-
         successors = []
         agentRow, AgentCol = state["agent"]
         DirtLocations = state["dirt"]
@@ -50,7 +45,7 @@ class VacuumCleanerWorld:
                 # adjust the new state to what the action will result in
                 NewState = {"agent": (newRow, newCol), "dirt": newDirtLocations}
                 successors.append((NewState, action, cost))
-            return successors
+        return successors
 
 
 class SearchNode:
@@ -64,17 +59,15 @@ class SearchNode:
 
     def compare_priority(self, other):
         # Defines the less-than operator to prioritize certain moves based on agent position
-
         return (self.state["agent"], self.path_cost) < (
             other.state["agent"],
             other.path_cost,
         )
 
-    def print_solution(node):
-
+    def print_solution(self):
         # Utility function to trace the solution path from the final node to the start.
-
         actions = []
+        node = self
         while node.parent is not None:
             actions.append(node.action)
             node = node.parent
