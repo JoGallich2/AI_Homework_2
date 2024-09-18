@@ -62,7 +62,7 @@ class SearchNode:
         self.path_cost = path_cost
         self.depth = depth
 
-    def __lt__(self, other):
+    def compare_priority(self, other):
         #Defines the less-than operator to priorize certain moves based on agent position
 
         return (self.state["agent"], self.path_cost) < (
