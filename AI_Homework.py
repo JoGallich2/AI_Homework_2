@@ -63,20 +63,19 @@ class SearchNode:
         self.depth = depth
 
     def compare_priority(self, other):
-        #Defines the less-than operator to priorize certain moves based on agent position
+        # Defines the less-than operator to prioritize certain moves based on agent position
 
         return (self.state["agent"], self.path_cost) < (
             other.state["agent"],
             other.path_cost,
         )
 
+    def print_solution(node):
 
-def print_solution(node):
+        # Utility function to trace the solution path from the final node to the start.
 
-    #Utility function to trace the solution path from the final node to the start.
-
-    actions = []
-    while node.parent is not None:
-        actions.append(node.action)
-        node = node.parent
-    return actions[::-1]  # Reverse the actions list to get the correct order
+        actions = []
+        while node.parent is not None:
+            actions.append(node.action)
+            node = node.parent
+        return actions[::-1]  # Reverse the actions list to get the correct order
