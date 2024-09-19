@@ -54,7 +54,7 @@ class SearchNode:
         self.action = action
         self.path_cost = path_cost
         self.depth = depth
-    
+
     def __lt__(self, other):
         # Define comparison based on path_cost
         return self.path_cost < other.path_cost
@@ -74,6 +74,10 @@ class UniformCostTreeSearch:
         self.environment = environment
 
     def uniform_cost_tree_search(self, initial_state):
+
+        # record the start time
+        start_time = time.time()
+
         # Initialize the priority queue (fringe) with the initial node
         root_node = SearchNode(state=initial_state)
         fringe = [(0, root_node)]  # Priority queue: (path_cost, node)
@@ -87,10 +91,19 @@ class UniformCostTreeSearch:
             # Check if the current node is the goal state
             if self.environment.GoalState(current_node.state):
                 print("Goal reached!")
+
+                # Record the end time and calculate the duration
+                end_time = time.time()
+                duration = end_time - start_time
+                print(f"Search completed in {duration:.4f} seconds")
+
                 return current_node  # Return the goal node
 
             # Add the current state to the explored set
-            explored.add(tuple(current_node.state["agent"]) + tuple(sorted(current_node.state["dirt"])))
+            explored.add(
+                tuple(current_node.state["agent"])
+                + tuple(sorted(current_node.state["dirt"]))
+            )
 
             # Expand the current node and add its successors to the fringe
             successors = self.environment.potentialSuccessors(current_node.state)
@@ -105,7 +118,10 @@ class UniformCostTreeSearch:
                     path_cost=new_cost,
                 )
                 # Convert state to a tuple for comparison
-                state_tuple = (tuple(new_node.state["agent"]), tuple(sorted(new_node.state["dirt"])))
+                state_tuple = (
+                    tuple(new_node.state["agent"]),
+                    tuple(sorted(new_node.state["dirt"])),
+                )
 
                 if state_tuple not in explored:
                     # Add the successor node to the fringe
@@ -125,8 +141,8 @@ class UniformCostTreeSearch:
             print(f"Total cost: {goal_node.path_cost}")
         else:
             print("No solution found.")
-            
-            
+
+
 class TestCased:
     def test_vacuum_cleaner_world(self):
         # Define both instances of the environment
