@@ -49,7 +49,7 @@ class VacuumCleanerEnvironment:
 
 
 class SearchNode:
-    def CreateNode(self, state, parent=None, action=None, path_cost=0, depth=0):
+    def __init__(self, state, parent=None, action=None, path_cost=0, depth=0):
         # Search node in problem space with current state
         self.state = state
         self.parent = parent
