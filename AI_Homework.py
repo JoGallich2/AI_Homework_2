@@ -35,7 +35,6 @@ class VacuumCleanerEnvironment:
             # check to see if the move will stay within grid
             if 1 <= newRow <= self.gridSize[0] and 1 <= newCol <= self.gridSize[1]:
                 newDirtLocations = list(DirtLocations)
-
                 # Check if suck action was performed and remove dirt from room
                 if action == "suck" and (agentRow, AgentCol) in newDirtLocations:
                     newDirtLocations.remove((agentRow, AgentCol))
@@ -43,6 +42,7 @@ class VacuumCleanerEnvironment:
                 # adjust the new state to what the action will result in
                 NewState = {"agent": (newRow, newCol), "dirt": newDirtLocations}
                 successors.append((NewState, action, cost))
+
         return successors
 
 
@@ -85,10 +85,8 @@ class UniformCostTreeSearch:
 
         # Loop until the goal is found or fringe is empty
         while fringe:
-            # Pop the node with the lowest cost
             current_cost, current_node = heapq.heappop(fringe)
 
-            # Check if the current node is the goal state
             if self.environment.GoalState(current_node.state):
                 print("Goal reached!")
 
@@ -97,15 +95,14 @@ class UniformCostTreeSearch:
                 duration = end_time - start_time
                 print(f"Search completed in {duration:.4f} seconds")
 
-                return current_node  # Return the goal node
+                return current_node
 
-            # Add the current state to the explored set
-            explored.add(
-                tuple(current_node.state["agent"])
-                + tuple(sorted(current_node.state["dirt"]))
+            state_tuple = (
+                tuple(current_node.state["agent"]),
+                tuple(sorted(current_node.state["dirt"])),
             )
+            explored.add(state_tuple)
 
-            # Expand the current node and add its successors to the fringe
             successors = self.environment.potentialSuccessors(current_node.state)
             for succ_state, action, action_cost in successors:
                 # Calculate the cumulative path cost for the successor
@@ -118,16 +115,15 @@ class UniformCostTreeSearch:
                     path_cost=new_cost,
                 )
                 # Convert state to a tuple for comparison
-                state_tuple = (
+                new_state_tuple = (
                     tuple(new_node.state["agent"]),
                     tuple(sorted(new_node.state["dirt"])),
                 )
 
-                if state_tuple not in explored:
+                if new_state_tuple not in explored:
                     # Add the successor node to the fringe
                     heapq.heappush(fringe, (new_cost, new_node))
                     # Print debug information
-
         # If no solution is found, return failure
         print("No solution found.")
         return None
