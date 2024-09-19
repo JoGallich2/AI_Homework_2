@@ -3,7 +3,7 @@ import time
 
 
 class VacuumCleanerEnvironment:
-    def WorldCreation(
+    def __init__(
         self, gridSize=(4, 5), DirtLocations=None, InitialLocation=(1, 1)
     ):
         # initialize the environment with the grid, vacuum position, and dirt locations.
