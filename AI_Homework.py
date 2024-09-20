@@ -155,42 +155,6 @@ class UniformCostTreeSearch:
             print("No solution found.")
 
 
-class TestCasedTree:
-    def test_vacuum_cleaner_world(self):
-        # Define both instances of the environment
-        instances = [
-            VacuumCleanerEnvironment(
-                gridSize=(4, 5),
-                DirtLocations=[(1, 2), (2, 4), (3, 5)],
-                InitialLocation=(2, 2),
-            ),
-            VacuumCleanerEnvironment(
-                gridSize=(4, 5),
-                DirtLocations=[(1, 2), (2, 1), (2, 4), (3, 3)],
-                InitialLocation=(3, 2),
-            ),
-        ]
-
-        # Iterate over both instances and run the test for each
-        for idx, instance in enumerate(instances, start=1):
-            # Define the initial state for the current instance
-            initial_state = {
-                "agent": instance.InitialLocation,
-                "dirt": instance.DirtLocations,
-            }
-
-            # Print the initial state
-            print(f"\nRunning Uniform Cost Tree Search on Instance #{idx}...")
-            print(f"Initial state: {initial_state}")
-
-            # Create a Uniform Cost Tree Search instance and run the search
-            uct_search = UniformCostTreeSearch(environment=instance)
-            goal_node = uct_search.uniform_cost_tree_search(initial_state)
-
-            # Print the solution
-            uct_search.print_solution(goal_node)
-
-
 class UniformCostGraphSearch:
     def __init__(self, environment, expanded_nodes = 0, generated_nodes = 0):
         self.environment = environment
@@ -275,36 +239,6 @@ class UniformCostGraphSearch:
             print("No solution found.")
 
 
-class TestCasedGraph:
-    def test_vacuum_cleaner_world(self):
-        instances = [
-            VacuumCleanerEnvironment(
-                gridSize=(4, 5),
-                DirtLocations=[(1, 2), (2, 4), (3, 5)],
-                InitialLocation=(2, 2),
-            ),
-            VacuumCleanerEnvironment(
-                gridSize=(4, 5),
-                DirtLocations=[(1, 2), (2, 1), (2, 4), (3, 3)],
-                InitialLocation=(3, 2),
-            ),
-        ]
-
-        for idx, instance in enumerate(instances, start=1):
-            initial_state = {
-                "agent": instance.InitialLocation,
-                "dirt": instance.DirtLocations,
-            }
-
-            print(f"\nRunning Uniform Cost Graph Search on Instance #{idx}...")
-            print(f"Initial state: {initial_state}")
-
-            uct_graph_search = UniformCostGraphSearch(environment=instance)
-            goal_node = uct_graph_search.uniform_cost_graph_search(initial_state)
-
-            uct_graph_search.print_solution(goal_node)
-
-
 class IterativeDeepeningTreeSearch:
     def __init__(self, environment, expanded_nodes = 0, count = 0, generated_nodes = 0):
         self.environment = environment
@@ -379,56 +313,44 @@ class IterativeDeepeningTreeSearch:
             print("No solution found.")
 
 
-class TestCasedIterativeDeepeningTree:
+class TestCases:
     def test_vacuum_cleaner_world(self):
         # Define two instances of the vacuum cleaner environment
         instances = [
-            VacuumCleanerEnvironment(
-                gridSize=(4, 5),
-                DirtLocations=[(1, 2), (2, 4), (3, 5)],
-                InitialLocation=(2, 2),
-            ),
-            VacuumCleanerEnvironment(
-                gridSize=(4, 5),
-                DirtLocations=[(1, 2), (2, 1), (2, 4), (3, 3)],
-                InitialLocation=(3, 2),
-            ),
+            VacuumCleanerEnvironment(gridSize=(4, 5), DirtLocations=[(1, 2), (2, 4), (3, 5)], InitialLocation=(2, 2)),
+            VacuumCleanerEnvironment(gridSize=(4, 5), DirtLocations=[(1, 2), (2, 1), (2, 4), (3, 3)], InitialLocation=(3, 2)),
         ]
 
-        # Iterate over both instances and run the test for each
         for idx, instance in enumerate(instances, start=1):
+            # Iterate over both instances and run every test for each
+            initial_state = {"agent": instance.InitialLocation, "dirt": instance.DirtLocations}
             # Define the initial state for the current instance
-            initial_state = {
-                "agent": instance.InitialLocation,
-                "dirt": instance.DirtLocations,
-            }
 
-            # Print the initial state
-            print(f"\nRunning Iterative Deepening Tree Search on Instance #{idx}...")
+            print(f"\nRunning Uniform Cost Tree Search on Instance #{idx}...")
             print(f"Initial state: {initial_state}")
+            # Create a Uniform Cost Tree Search instance and run the search
+            uct_search = UniformCostTreeSearch(environment=instance)
+            goal_node = uct_search.uniform_cost_tree_search(initial_state)
+            uct_search.print_solution(goal_node)
+            # Print the solution
 
+            print(f"\nRunning Uniform Cost Graph Search on Instance #{idx}...")
+            print(f"Initial state: {initial_state}")
+            # Create a Uniform Cost Graph Search instance and run the search
+            ucg_search = UniformCostGraphSearch(environment=instance)
+            goal_node = ucg_search.uniform_cost_graph_search(initial_state)
+            ucg_search.print_solution(goal_node)
+            # Print the solution
+
+            print(f"\nRunning Iterative Deepening Search on Instance #{idx}...")
+            print(f"Initial state: {initial_state}")
             # Create an Iterative Deepening Tree Search instance and run the search
             idt_search = IterativeDeepeningTreeSearch(environment=instance)
             goal_node = idt_search.iterative_deepening_tree_search(initial_state)
-
-            # Print the solution
             idt_search.print_solution(goal_node)
+            # Print the solution
 
-
+test_cases = TestCases()
 # Create an instance of the test class
-test_case1 = TestCasedTree()
-
-# Call the test method to run the test for both instances
-test_case1.test_vacuum_cleaner_world()
-
-# Create an instance of the test class
-test_case2 = TestCasedGraph()
-
-# Call the test method to run the test for both instances
-test_case2.test_vacuum_cleaner_world()
-
-# Create an instance of the test class
-test_case3 = TestCasedIterativeDeepeningTree()
-
-# Call the test method to run the test for both instances
-test_case3.test_vacuum_cleaner_world()
+test_cases.test_vacuum_cleaner_world()
+# Call the test method to run the tests for both instances
