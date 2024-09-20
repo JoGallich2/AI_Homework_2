@@ -70,23 +70,35 @@ class SearchNode:
 
 
 class UniformCostTreeSearch:
-    def __init__(self, environment):
+    def __init__(self, environment, expanded_nodes = 0, generated_nodes = 0):
         self.environment = environment
+        self.expanded_nodes = expanded_nodes
+        self.generated_nodes = generated_nodes
 
     def uniform_cost_tree_search(self, initial_state):
 
         # record the start time
         start_time = time.time()
 
+        # record number of expanded nodes
+        self.expanded_nodes = 0
+        self.generated_nodes = 0
+        count = 0
+
         # Initialize the priority queue (fringe) with the initial node
         root_node = SearchNode(state=initial_state)
         fringe = [(0, root_node)]  # Priority queue: (path_cost, node)
         explored = set()  # To track explored states
 
+        print("First 5 Nodes Expanded: ")
+
         # Loop until the goal is found or fringe is empty
         while fringe:
             current_cost, current_node = heapq.heappop(fringe)
+            if count <= 5:
 
+                print(current_node.state["agent"])
+                count += 1
             if self.environment.GoalState(current_node.state):
                 print("Goal reached!")
 
@@ -94,6 +106,8 @@ class UniformCostTreeSearch:
                 end_time = time.time()
                 duration = end_time - start_time
                 print(f"Search completed in {duration:.4f} seconds")
+                print(f"The number of expaned nodes: {self.expanded_nodes}")
+                print(f"The number of generated nodes: {self.generated_nodes}")
 
                 return current_node
 
@@ -102,11 +116,13 @@ class UniformCostTreeSearch:
                 tuple(sorted(current_node.state["dirt"])),
             )
             explored.add(state_tuple)
+            self.expanded_nodes += 1
 
             successors = self.environment.potentialSuccessors(current_node.state)
             for succ_state, action, action_cost in successors:
                 # Calculate the cumulative path cost for the successor
                 new_cost = current_node.path_cost + action_cost
+                self.generated_nodes += 1
                 # Create a new search node for the successor
                 new_node = SearchNode(
                     state=succ_state,
@@ -176,13 +192,22 @@ class TestCasedTree:
 
 
 class UniformCostGraphSearch:
-    def __init__(self, environment):
+    def __init__(self, environment, expanded_nodes = 0, generated_nodes = 0):
         self.environment = environment
+        self.expanded_nodes = expanded_nodes
+        self.generated_nodes = generated_nodes
 
     def uniform_cost_graph_search(self, initial_state):
 
         # record the start time
         start_time = time.time()
+
+        # record number of expanded nodes
+        self.expanded_nodes = 0
+        self.generated_nodes = 0
+
+        print("First 5 Nodes Expanded: ")
+        count = 0
 
         # Initialize the closed set and fringe (priority queue)
         closed = set()
@@ -192,7 +217,9 @@ class UniformCostGraphSearch:
         # Loop until the goal is found or the fringe is empty
         while fringe:
             current_cost, current_node = heapq.heappop(fringe)
-
+            if count <= 5:
+                print(current_node.state["agent"])
+                count += 1
             if self.environment.GoalState(current_node.state):
                 print("Goal reached!")
 
@@ -200,6 +227,8 @@ class UniformCostGraphSearch:
                 end_time = time.time()
                 duration = end_time - start_time
                 print(f"Search completed in {duration:.4f} seconds")
+                print(f"The number of expaned nodes: {self.expanded_nodes}")
+                print(f"The number of generated nodes: {self.generated_nodes}")
                 return current_node
 
             # Convert the state to a tuple for checking in the closed set
@@ -214,7 +243,9 @@ class UniformCostGraphSearch:
 
                 # Expand the current node
                 successors = self.environment.potentialSuccessors(current_node.state)
+                self.expanded_nodes += 1
                 for succ_state, action, action_cost in successors:
+                    self.generated_nodes += 1
                     new_cost = current_node.path_cost + action_cost
                     new_node = SearchNode(
                         state=succ_state,
@@ -275,8 +306,11 @@ class TestCasedGraph:
 
 
 class IterativeDeepeningTreeSearch:
-    def __init__(self, environment):
+    def __init__(self, environment, expanded_nodes = 0, count = 0, generated_nodes = 0):
         self.environment = environment
+        self.expanded_nodes = expanded_nodes
+        self.generated_nodes = generated_nodes
+        self.count = count
 
     def depth_limited_search(self, node, depth_limit):
         # Perform a depth-limited search (DFS) with a depth limit
@@ -286,6 +320,9 @@ class IterativeDeepeningTreeSearch:
         if depth_limit == 0:
             return None  # Reached the depth limit, stop expanding
 
+        if self.count <= 5:
+            print(node.state["agent"])
+            self.count += 1
         successors = self.environment.potentialSuccessors(node.state)
         for succ_state, action, action_cost in successors:
             new_node = SearchNode(
@@ -305,19 +342,29 @@ class IterativeDeepeningTreeSearch:
         # Record the start time
         start_time = time.time()
 
+        # Record the number of expanded nodes
+        self.expanded_nodes = 1
+        self.generated_nodes = 1
+        count = 0
+        print("First 5 Nodes Expanded: ")
+
         # Start with depth limit 0 and increase the limit with each iteration
         depth_limit = 0
         root_node = SearchNode(state=initial_state)
-
+        
         # Loop to increment depth limit and perform a depth-limited search
         while True:
             result = self.depth_limited_search(root_node, depth_limit)
-
+            self.expanded_nodes = self.expanded_nodes + 2**depth_limit
+            nexts = depth_limit + 1 # The next depth limit
+            self.generated_nodes = self.generated_nodes + 2**nexts
             if result:
                 print("Goal reached!")
                 end_time = time.time()
                 duration = end_time - start_time
                 print(f"Search completed in {duration:.4f} seconds")
+                print(f"The number of expaned nodes: {self.expanded_nodes}")
+                print(f"The number of generated nodes: {self.generated_nodes}")
                 return result
 
             depth_limit += 1  # Increment the depth limit for the next iteration
