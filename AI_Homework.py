@@ -139,7 +139,7 @@ class UniformCostTreeSearch:
             print("No solution found.")
 
 
-class TestCased:
+class TestCasedTree:
     def test_vacuum_cleaner_world(self):
         # Define both instances of the environment
         instances = [
@@ -175,8 +175,213 @@ class TestCased:
             uct_search.print_solution(goal_node)
 
 
+class UniformCostGraphSearch:
+    def __init__(self, environment):
+        self.environment = environment
+
+    def uniform_cost_graph_search(self, initial_state):
+
+        # record the start time
+        start_time = time.time()
+
+        # Initialize the closed set and fringe (priority queue)
+        closed = set()
+        root_node = SearchNode(state=initial_state)
+        fringe = [(0, root_node)]  # Priority queue: (path_cost, node)
+
+        # Loop until the goal is found or the fringe is empty
+        while fringe:
+            current_cost, current_node = heapq.heappop(fringe)
+
+            if self.environment.GoalState(current_node.state):
+                print("Goal reached!")
+
+                # Record the end time and calculate the duration
+                end_time = time.time()
+                duration = end_time - start_time
+                print(f"Search completed in {duration:.4f} seconds")
+                return current_node
+
+            # Convert the state to a tuple for checking in the closed set
+            state_tuple = (
+                tuple(current_node.state["agent"]),
+                tuple(sorted(current_node.state["dirt"])),
+            )
+
+            # If the current state is not in the closed set, process it
+            if state_tuple not in closed:
+                closed.add(state_tuple)
+
+                # Expand the current node
+                successors = self.environment.potentialSuccessors(current_node.state)
+                for succ_state, action, action_cost in successors:
+                    new_cost = current_node.path_cost + action_cost
+                    new_node = SearchNode(
+                        state=succ_state,
+                        parent=current_node,
+                        action=action,
+                        path_cost=new_cost,
+                    )
+
+                    new_state_tuple = (
+                        tuple(new_node.state["agent"]),
+                        tuple(sorted(new_node.state["dirt"])),
+                    )
+
+                    if new_state_tuple not in closed:
+                        heapq.heappush(fringe, (new_cost, new_node))
+
+        print("No solution found.")
+        return None
+
+    def print_solution(self, goal_node):
+        if goal_node:
+            actions = goal_node.print_solution()
+            print(f"Solution found: {actions}")
+            print(f"Number of moves: {len(actions)}")
+            print(f"Total cost: {goal_node.path_cost}")
+        else:
+            print("No solution found.")
+
+
+class TestCasedGraph:
+    def test_vacuum_cleaner_world(self):
+        instances = [
+            VacuumCleanerEnvironment(
+                gridSize=(4, 5),
+                DirtLocations=[(1, 2), (2, 4), (3, 5)],
+                InitialLocation=(2, 2),
+            ),
+            VacuumCleanerEnvironment(
+                gridSize=(4, 5),
+                DirtLocations=[(1, 2), (2, 1), (2, 4), (3, 3)],
+                InitialLocation=(3, 2),
+            ),
+        ]
+
+        for idx, instance in enumerate(instances, start=1):
+            initial_state = {
+                "agent": instance.InitialLocation,
+                "dirt": instance.DirtLocations,
+            }
+
+            print(f"\nRunning Uniform Cost Graph Search on Instance #{idx}...")
+            print(f"Initial state: {initial_state}")
+
+            uct_graph_search = UniformCostGraphSearch(environment=instance)
+            goal_node = uct_graph_search.uniform_cost_graph_search(initial_state)
+
+            uct_graph_search.print_solution(goal_node)
+
+
+class IterativeDeepeningTreeSearch:
+    def __init__(self, environment):
+        self.environment = environment
+
+    def depth_limited_search(self, node, depth_limit):
+        # Perform a depth-limited search (DFS) with a depth limit
+        if self.environment.GoalState(node.state):
+            return node
+
+        if depth_limit == 0:
+            return None  # Reached the depth limit, stop expanding
+
+        successors = self.environment.potentialSuccessors(node.state)
+        for succ_state, action, action_cost in successors:
+            new_node = SearchNode(
+                state=succ_state,
+                parent=node,
+                action=action,
+                path_cost=node.path_cost + action_cost,  # Add the action cost for each move
+                depth=node.depth + 1,
+            )
+            result = self.depth_limited_search(new_node, depth_limit - 1)
+            if result:
+                return result  # Return the goal node if the goal is found
+
+        return None  # No solution at this depth
+
+    def iterative_deepening_tree_search(self, initial_state):
+        # Record the start time
+        start_time = time.time()
+
+        # Start with depth limit 0 and increase the limit with each iteration
+        depth_limit = 0
+        root_node = SearchNode(state=initial_state)
+
+        # Loop to increment depth limit and perform a depth-limited search
+        while True:
+            result = self.depth_limited_search(root_node, depth_limit)
+
+            if result:
+                print("Goal reached!")
+                end_time = time.time()
+                duration = end_time - start_time
+                print(f"Search completed in {duration:.4f} seconds")
+                return result
+
+            depth_limit += 1  # Increment the depth limit for the next iteration
+
+    def print_solution(self, goal_node):
+        if goal_node:
+            actions = goal_node.print_solution()
+            print(f"Solution found: {actions}")
+            print(f"Number of moves: {len(actions)}")
+            print(f"Total cost: {goal_node.path_cost}")
+        else:
+            print("No solution found.")
+
+
+class TestCasedIterativeDeepeningTree:
+    def test_vacuum_cleaner_world(self):
+        # Define two instances of the vacuum cleaner environment
+        instances = [
+            VacuumCleanerEnvironment(
+                gridSize=(4, 5),
+                DirtLocations=[(1, 2), (2, 4), (3, 5)],
+                InitialLocation=(2, 2),
+            ),
+            VacuumCleanerEnvironment(
+                gridSize=(4, 5),
+                DirtLocations=[(1, 2), (2, 1), (2, 4), (3, 3)],
+                InitialLocation=(3, 2),
+            ),
+        ]
+
+        # Iterate over both instances and run the test for each
+        for idx, instance in enumerate(instances, start=1):
+            # Define the initial state for the current instance
+            initial_state = {
+                "agent": instance.InitialLocation,
+                "dirt": instance.DirtLocations,
+            }
+
+            # Print the initial state
+            print(f"\nRunning Iterative Deepening Tree Search on Instance #{idx}...")
+            print(f"Initial state: {initial_state}")
+
+            # Create an Iterative Deepening Tree Search instance and run the search
+            idt_search = IterativeDeepeningTreeSearch(environment=instance)
+            goal_node = idt_search.iterative_deepening_tree_search(initial_state)
+
+            # Print the solution
+            idt_search.print_solution(goal_node)
+
+
 # Create an instance of the test class
-test_case = TestCased()
+test_case1 = TestCasedTree()
 
 # Call the test method to run the test for both instances
-test_case.test_vacuum_cleaner_world()
+test_case1.test_vacuum_cleaner_world()
+
+# Create an instance of the test class
+test_case2 = TestCasedGraph()
+
+# Call the test method to run the test for both instances
+test_case2.test_vacuum_cleaner_world()
+
+# Create an instance of the test class
+test_case3 = TestCasedIterativeDeepeningTree()
+
+# Call the test method to run the test for both instances
+test_case3.test_vacuum_cleaner_world()
